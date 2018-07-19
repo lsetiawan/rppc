@@ -1,6 +1,6 @@
 
 def readme_template(package_name, package_description):
-    return f"""# {package_name}\n---\n
+    return f"""# {package_name}\n
 {package_description}\n
 This package has been automatically generated, 
 please edit this file for better description."""
