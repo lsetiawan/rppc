@@ -70,7 +70,7 @@ def create_setup(package_dir, package_name, package_description,
 
 def create_readme(package_dir, package_name, package_description):
     readme_text = readme_template(package_name, package_description)
-    file_writer(package_dir, 'README', readme_text)
+    file_writer(package_dir, 'README.md', readme_text)
 
 def create_requirements(package_dir, dependencies, **kwargs):
     cleaned_dependencies = list(map(lambda d: d.strip(' '), dependencies.split(',')))

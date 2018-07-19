@@ -97,7 +97,7 @@ parentdir_prefix = {package_name}-
 """
 
 def manifest(additional_text):
-    return f"""include README
+    return f"""include README.md
 include *.txt
 
 {additional_text}
