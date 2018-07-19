@@ -1,0 +1,4 @@
+include README
+include *.txt
+include versioneer.py
+include rppc/_version.py
