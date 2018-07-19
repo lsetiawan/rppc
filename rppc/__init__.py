@@ -146,7 +146,7 @@ def init():
     use_versioneer()
     # Commit changes
     subprocess.run(['git', 'add', '.'])
-    subprocess.run(['git', 'commit', '-m', '"Initialize package repository"'])
+    subprocess.run(['git', 'commit', '-m', 'Initialize package repository'])
 
 
 
