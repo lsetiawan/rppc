@@ -53,7 +53,7 @@ setup(
     long_description_content_type='text/markdown',
     url='',
     author='{author_name}',
-    author_email='{author_name}',
+    author_email='{author_email}',
     maintainer='{author_name}',
     maintainer_email='{author_email}',
     python_requires='>=3',

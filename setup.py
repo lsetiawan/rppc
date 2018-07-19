@@ -25,7 +25,7 @@ setup(
     long_description_content_type='text/markdown',
     url='',
     author='Landung Setiawan',
-    author_email='Landung Setiawan',
+    author_email='landungs@uw.edu',
     maintainer='Landung Setiawan',
     maintainer_email='landungs@uw.edu',
     python_requires='>=3',
