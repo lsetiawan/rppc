@@ -105,3 +105,6 @@ venv.bak/
 
 # ipynb
 .ipynb_checkpoints
+
+# IDE
+.vscode

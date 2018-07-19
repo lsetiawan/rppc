@@ -42,4 +42,8 @@ setup(
     include_package_data=True,
     packages=find_packages(),
     install_requires=install_requires,
+    entry_points=dict(console_scripts=[
+        'rppc = rppc.cli:main'
+        ]
+),
 )
