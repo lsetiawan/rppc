@@ -44,6 +44,9 @@ setup(
     install_requires=install_requires,
     entry_points=dict(console_scripts=[
         'rppc = rppc.cli:main'
-        ]
+        ],
+    setup_requires=['setuptools>=38.6.0', 
+                    'wheel>=0.31.0', 
+                    'twine>=1.11.0']
 ),
 )
