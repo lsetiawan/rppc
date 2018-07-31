@@ -41,7 +41,7 @@ with open('requirements.txt') as f:
     requirements = f.readlines()
 install_requires = [t.strip() for t in requirements]
 
-with open(os.path.join(here, 'README'), encoding='utf-8') as f:
+with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
