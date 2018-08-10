@@ -22,6 +22,11 @@ flake8-quotes
 ipython
 ipykernel
 
+# Documentation
+spinx
+doctr
+nbsphinx
+
 {additional_text}
 """
 

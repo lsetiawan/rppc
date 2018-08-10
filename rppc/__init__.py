@@ -37,9 +37,8 @@ def create_tests(package_dir):
 def create_travis(package_dir, package_name):
     file_writer(package_dir, '.travis.yml', travis_template(package_name))
 
-def create_examples(package_dir):
-    examples_dir = folder_creator(package_dir, 'examples')
-    notebooks_dir = os.path.join(examples_dir, 'notebooks')
+def create_notebooks_folder(package_dir):
+    notebooks_dir = folder_creator(package_dir, 'notebooks')
     file_writer(notebooks_dir, '.gitkeep', '')
 
 def create_license(selection, package_dir, author_name):
@@ -86,6 +85,20 @@ def use_versioneer():
     cmd = ['versioneer', 'install']
     subprocess.run(cmd)
 
+def create_sphinx_docs(package_dir, package_name, 
+                       package_description, author_name, 
+                       **kwargs):
+    docs_dir = folder_creator(package_dir, 'docs')
+    cmd = ['sphinx-quickstart', '--sep', 
+           f'--project={package_name}', f'--author="{author_name}"', 
+           '--ext-autodoc', '--ext-viewcode', 
+           '--extensions=sphinx.ext.napoleon', '--extensions=nbsphinx', 
+           '--makefile', '--dot=_', 
+           '--release=""', '-v', '""', 
+           '--suffix=.rst', '--language=en', 
+           '--master=index', '-q', '--no-batchfile', f'{docs_dir}']
+    subprocess.run(cmd)
+
 def init_package_code_dir(package_dir, package_name, **kwargs):
     package_code_dir = folder_creator(package_dir, package_name)
 
@@ -123,6 +136,8 @@ def init():
     init_git(package_dir)
     # Create package code directory
     init_package_code_dir(package_dir, inputs.package_name, author_name=inputs.author_name)
+    # Create notebooks directory
+    create_notebooks_folder(package_dir)
     # Create license
     license_detail = create_license(inputs.license, package_dir, inputs.author_name)
     # Create readme
@@ -144,6 +159,11 @@ def init():
     create_travis(package_dir, inputs.package_name)
     # Use Versioneer
     use_versioneer()
+    # Create initial sphinx docs
+    create_sphinx_docs(package_dir, 
+                       inputs.package_name, 
+                       inputs.package_description, 
+                       inputs.author_name)
     # Commit changes
     subprocess.run(['git', 'add', '.'])
     subprocess.run(['git', 'commit', '-m', 'Initialize package repository'])
