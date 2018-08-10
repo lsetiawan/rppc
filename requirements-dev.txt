@@ -13,3 +13,8 @@ flake8-quotes
 # Debugging packages
 ipython
 ipykernel
+
+# Documentation
+spinx
+doctr
+nbsphinx
