@@ -1,3 +1,5 @@
 requests
 versioneer
 munch
+sphinx
+nbsphinx

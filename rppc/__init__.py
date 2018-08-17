@@ -9,6 +9,8 @@ import argparse
 import requests
 from munch import Munch
 
+from doctr.local import GitHub_login
+
 from .utils import (folder_creator, file_writer)
 from .templates import (tests_example, 
                         readme_template, 
@@ -16,7 +18,10 @@ from .templates import (tests_example,
                         setup_template, 
                         setup_cfg_template, 
                         manifest, 
-                        travis_template)
+                        travis_template, 
+                        flake8_template, 
+                        contributing_md, 
+                        authors_md)
 
 __author__ = 'Landung Setiawan'
 from ._version import get_versions
@@ -36,6 +41,15 @@ def create_tests(package_dir):
 
 def create_travis(package_dir, package_name):
     file_writer(package_dir, '.travis.yml', travis_template(package_name))
+
+def create_flake8(package_dir, package_name):
+    file_writer(package_dir, '.flake8', flake8_template(package_name))
+
+def create_authors(package_dir, author_name, author_email):
+    file_writer(package_dir, 'AUTHORS.md', authors_md(author_name, author_email))
+
+def create_contributing(package_dir, package_name, github_username):
+    file_writer(package_dir, 'CONTRIBUTING.md', contributing_md(package_name, github_username))
 
 def create_notebooks_folder(package_dir):
     notebooks_dir = folder_creator(package_dir, 'notebooks')
@@ -129,6 +143,10 @@ def get_user_input():
     return Munch(**args)
 
 def init():
+    # Get github login
+    gh_auth = GitHub_login()
+    github_username = gh_auth['auth'].username
+    # Get user inputs
     inputs = get_user_input()
     # Create package directory
     package_dir = create_package_dir(inputs.package_name)
@@ -140,6 +158,12 @@ def init():
     create_notebooks_folder(package_dir)
     # Create license
     license_detail = create_license(inputs.license, package_dir, inputs.author_name)
+    # Create flake8
+    create_flake8(package_dir, inputs.package_name)
+    # Create authors
+    create_authors(package_dir, inputs.author_name, inputs.author_email)
+    # Create contributing
+    create_contributing(package_dir, inputs.package_name, github_username)
     # Create readme
     create_readme(package_dir, inputs.package_name, inputs.package_description)
     # Create requirements
