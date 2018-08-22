@@ -9,6 +9,8 @@ import argparse
 import requests
 from munch import Munch
 
+import yaml
+
 from doctr.local import GitHub_login
 
 from .utils import (folder_creator, file_writer)
@@ -128,13 +130,23 @@ def init_git(package_dir):
     gitignore_text = f"""{gitignore}\n# ipynb\n.ipynb_checkpoints\n"""
     file_writer(package_dir, '.gitignore', gitignore_text)
 
-def get_user_input():
+def get_user_input(info_file=None):
     args = dict()
-    args['package_name'] = input('package_name: ').lower()
-    args['package_description'] = input('package_description: ')
-    args['author_name'] = input('author_name: ')
-    args['author_email'] = input('author_email: ')
-    args['dependencies'] = input('dependencies (comma separated): ')
+    if info_file:
+        ymldct = yaml.load(info_file)
+        args['package_name'] = ymldct['name']
+        args['package_description'] = ymldct['description']
+        args['author_name'] = ymldct['author']['name']
+        args['author_email'] = ymldct['author']['email']
+        args['dependencies'] = ','.join(ymldct['dependencies'])
+        args['gh_username'] = ymldct.get('github-id', 'someuser')
+    else:
+        args['package_name'] = input('Enter package name: ')
+        args['package_description'] = input('Enter initial package description: ')
+        args['author_name'] = input('Primary Author Name: ')
+        args['author_email'] = input('Primary Author Email: ')
+        args['dependencies'] = input('Package dependencies (comma separated): ')
+        args['gh_username'] = input('What is your github username: ')
 
     license_list = list(map(lambda x: f"{x[0]}: {x[1]['name']}", enumerate(LICENSES)))
     license_list_str = '\n'.join(license_list)
@@ -142,12 +154,15 @@ def get_user_input():
     
     return Munch(**args)
 
-def init():
-    # Get github login
-    gh_auth = GitHub_login()
-    github_username = gh_auth['auth'].username
+def init(info_file=None, init_github=False):
     # Get user inputs
-    inputs = get_user_input()
+    inputs = get_user_input(info_file)
+    if init_github:
+        # Get github login
+        gh_auth = GitHub_login()
+        github_username = gh_auth['auth'].username
+    else:
+        github_username = inputs.gh_username
     # Create package directory
     package_dir = create_package_dir(inputs.package_name)
     # Initialize git repo
