@@ -1,0 +1,10 @@
+name: MyAwesomePackage
+description: This is my test package description
+author: 
+  name: John Smith
+  email: jsmith@example.com
+dependencies:
+  - pandas
+  - numpy
+  - matplotlib
+github-id: jsuser
