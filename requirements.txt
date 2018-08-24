@@ -4,3 +4,4 @@ munch
 sphinx
 nbsphinx
 pyyaml
+doctr
