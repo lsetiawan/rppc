@@ -13,7 +13,7 @@ import yaml
 
 from doctr.local import GitHub_login
 
-from .utils import (folder_creator, file_writer)
+from .utils import (folder_creator, file_writer, create_repo)
 from .templates import (tests_example, 
                         readme_template, 
                         dev_dependencies, 
@@ -157,10 +157,13 @@ def get_user_input(info_file=None):
 def init(info_file=None, init_github=False):
     # Get user inputs
     inputs = get_user_input(info_file)
+    git_url = None
     if init_github:
         # Get github login
         gh_auth = GitHub_login()
         github_username = gh_auth['auth'].username
+        # Initialize repo
+        git_url = create_repo(inputs.package_name, inputs.package_description, gh_auth)
     else:
         github_username = inputs.gh_username
     # Create package directory
@@ -206,6 +209,12 @@ def init(info_file=None, init_github=False):
     # Commit changes
     subprocess.run(['git', 'add', '.'])
     subprocess.run(['git', 'commit', '-m', 'Initialize package repository'])
+    # Push to github
+    if git_url:
+        subprocess.run(['git', 'remote', 'add', 'origin', git_url])
+        subprocess.run(['git', 'push', '-u', 'origin', 'master'])
+
+
 
 
 

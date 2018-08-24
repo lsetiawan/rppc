@@ -14,10 +14,8 @@ def parse_args():
 
 def main():
     args = parse_args()
-    print(args)
     if args.cmd == 'init':
         init(info_file=args.file, init_github=args.github)
-        print('init')
 
 if __name__ == '__main__':
     main()
