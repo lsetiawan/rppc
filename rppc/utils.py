@@ -52,7 +52,6 @@ def check_repos(max_page, *args):
 
 
 def check_package(package_name, github_username):
-    # TODO: If package don't exist now create and upload to github!!!
     url = '/'.join([GITHUB_API_URL, 'users', github_username, 'repos'])
     pages = check_user(github_username)
     rep = check_repos(pages, github_username, package_name, url)
