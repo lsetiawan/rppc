@@ -1,18 +1,22 @@
 import os
 import requests
+import subprocess
 import warnings
 
+
 GITHUB_API_URL = 'https://api.github.com'
+
 
 def file_writer(folder, filename, content):
     with open(os.path.join(folder, filename), 'w') as f:
         f.write(content)
 
+
 def folder_creator(base_dir, folder_name):
     new_folder = os.path.join(base_dir, folder_name)
     if not os.path.exists(new_folder):
         os.mkdir(new_folder)
-    
+
     return new_folder
 
 
@@ -60,6 +64,7 @@ def check_package(package_name, github_username):
             warnings.warn(f'{package_name} exists on {github_username} Github account!')
             return r
 
+
 def create_repo(package_name, package_description, github_auth):
     try:
         github_username = github_auth['auth'].username
@@ -82,3 +87,12 @@ def create_repo(package_name, package_description, github_auth):
                 return Exception(req.text)
     except Exception as e:
         print(e)
+
+
+def make_command(command_list):
+    return ' '.join(command_list)
+
+
+def run_shell_command(command_list):
+    cmd = make_command(command_list)
+    subprocess.run(cmd, shell=True)

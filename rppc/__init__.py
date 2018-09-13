@@ -3,7 +3,6 @@ import shutil
 import sys
 import re
 import datetime
-import subprocess
 import argparse
 
 import requests
@@ -13,17 +12,25 @@ import yaml
 
 from doctr.local import GitHub_login
 
-from .utils import (folder_creator, file_writer, create_repo)
-from .templates import (tests_example, 
-                        readme_template, 
-                        dev_dependencies, 
-                        setup_template, 
-                        setup_cfg_template, 
-                        manifest, 
-                        travis_template, 
-                        flake8_template, 
-                        contributing_md, 
-                        authors_md)
+from .utils import (
+    folder_creator,
+    file_writer,
+    create_repo,
+    run_shell_command
+)
+
+from .templates import (
+    tests_example,
+    readme_template,
+    dev_dependencies,
+    setup_template,
+    setup_cfg_template,
+    manifest,
+    travis_template,
+    flake8_template,
+    contributing_md,
+    authors_md
+)
 
 __author__ = 'Landung Setiawan'
 from ._version import get_versions
@@ -32,6 +39,7 @@ del get_versions
 
 BASE_DIR = os.path.abspath(os.path.curdir)
 LICENSES = requests.get('https://api.github.com/licenses').json()
+DEFAULT_CREDENTIAL_LOC = '~/.git-credentials'
 
 def create_package_dir(package_name):
     return folder_creator(BASE_DIR, package_name)
@@ -70,15 +78,15 @@ def create_license(selection, package_dir, author_name):
 
     return license_detail
 
-def create_setup(package_dir, package_name, package_description, 
+def create_setup(package_dir, package_name, package_description,
                 author_name, author_email, license_detail):
-    file_writer(package_dir, 
-                'setup.py', 
+    file_writer(package_dir,
+                'setup.py',
                 setup_template(
-                    package_name, 
-                    package_description, 
-                    author_name, 
-                    author_email, 
+                    package_name,
+                    package_description,
+                    author_name,
+                    author_email,
                     license_detail)
                 )
     file_writer(package_dir, 'setup.cfg', setup_cfg_template(package_name))
@@ -94,26 +102,25 @@ def create_requirements(package_dir, dependencies, **kwargs):
     file_writer(package_dir, 'requirements-dev.txt', dev_dependencies(additional_text))
 
 def create_manifest(package_dir, **kwargs):
-    additional_text = kwargs.get('additional_text', '') 
+    additional_text = kwargs.get('additional_text', '')
     file_writer(package_dir, 'MANIFEST.in', manifest(additional_text))
 
 def use_versioneer():
-    cmd = ['versioneer', 'install']
-    subprocess.run(cmd)
+    run_shell_command(['versioneer', 'install'])
 
-def create_sphinx_docs(package_dir, package_name, 
-                       package_description, author_name, 
+def create_sphinx_docs(package_dir, package_name,
+                       package_description, author_name,
                        **kwargs):
     docs_dir = folder_creator(package_dir, 'docs')
-    cmd = ['sphinx-quickstart', '--sep', 
-           f'--project={package_name}', f'--author="{author_name}"', 
-           '--ext-autodoc', '--ext-viewcode', 
-           '--extensions=sphinx.ext.napoleon', '--extensions=nbsphinx', 
-           '--makefile', '--dot=_', 
-           '--release=""', '-v', '""', 
-           '--suffix=.rst', '--language=en', 
+    cmd = ['sphinx-quickstart', '--sep',
+           f'--project={package_name}', f'--author="{author_name}"',
+           '--ext-autodoc', '--ext-viewcode',
+           '--extensions=sphinx.ext.napoleon', '--extensions=nbsphinx',
+           '--makefile', '--dot=_',
+           '--release=""', '-v', '""',
+           '--suffix=.rst', '--language=en',
            '--master=index', '-q', '--no-batchfile', f'{docs_dir}']
-    subprocess.run(cmd)
+    run_shell_command(cmd)
 
 def init_package_code_dir(package_dir, package_name, **kwargs):
     package_code_dir = folder_creator(package_dir, package_name)
@@ -124,7 +131,7 @@ def init_package_code_dir(package_dir, package_name, **kwargs):
 
 def init_git(package_dir):
     os.chdir(package_dir)
-    git = subprocess.run(['git', 'init'])
+    run_shell_command(['git', 'init'])
 
     gitignore = requests.get('https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore').text
     gitignore_text = f"""{gitignore}\n# ipynb\n.ipynb_checkpoints\n"""
@@ -151,13 +158,38 @@ def get_user_input(info_file=None):
     license_list = list(map(lambda x: f"{x[0]}: {x[1]['name']}", enumerate(LICENSES)))
     license_list_str = '\n'.join(license_list)
     args['license'] = int(input(f"{license_list_str}\nSelect number: "))
-    
+
     return Munch(**args)
+
+def set_local_repo_credentials(gh_auth, credential_loc=None):
+    if gh_auth is None or gh_auth.get('auth') is None:
+        print('Authentication required. Please provide username and password!')
+        exit(1)
+
+    if credential_loc is None:
+        credential_loc = DEFAULT_CREDENTIAL_LOC
+
+    auth = gh_auth['auth']
+
+    credential_url = f'https://{auth.username}:{auth.password}@github.com'
+
+    print('Setting local repo credentials...')
+    run_shell_command(['echo', f'"{credential_url}"', '>', credential_loc])
+    run_shell_command(['git', 'config', 'credential.helper', f'"store --file {credential_loc}"'])
+
+def unset_local_repo_credentials(credential_loc=None):
+    if credential_loc is None:
+        credential_loc = DEFAULT_CREDENTIAL_LOC
+
+    print('Unsetting local repo credentials...')
+    run_shell_command(['git', 'config', '--unset', 'credential.helper', f'"store --file {credential_loc}"'])
+    run_shell_command(['rm', '-rf', credential_loc])
 
 def init(info_file=None, init_github=False):
     # Get user inputs
     inputs = get_user_input(info_file)
     git_url = None
+    gh_auth = None
     if init_github:
         # Get github login
         gh_auth = GitHub_login()
@@ -187,11 +219,11 @@ def init(info_file=None, init_github=False):
     # Create requirements
     create_requirements(package_dir, inputs.dependencies)
     # Create setup.py
-    create_setup(package_dir, 
-                inputs.package_name, 
-                inputs.package_description, 
-                inputs.author_name, 
-                inputs.author_email, 
+    create_setup(package_dir,
+                inputs.package_name,
+                inputs.package_description,
+                inputs.author_name,
+                inputs.author_email,
                 license_detail)
     # Create Manifest.in
     create_manifest(package_dir)
@@ -202,24 +234,17 @@ def init(info_file=None, init_github=False):
     # Use Versioneer
     use_versioneer()
     # Create initial sphinx docs
-    create_sphinx_docs(package_dir, 
-                       inputs.package_name, 
-                       inputs.package_description, 
+    create_sphinx_docs(package_dir,
+                       inputs.package_name,
+                       inputs.package_description,
                        inputs.author_name)
     # Commit changes
-    subprocess.run(['git', 'add', '.'])
-    subprocess.run(['git', 'commit', '-m', 'Initialize package repository'])
+    run_shell_command(['git', 'add', '.'])
+    run_shell_command(['git', 'commit', '-m', '"Initialize package repository"'])
+
     # Push to github
-    if git_url:
-        subprocess.run(['git', 'remote', 'add', 'origin', git_url])
-        subprocess.run(['git', 'push', '-u', 'origin', 'master'])
-
-
-
-
-
-
-
-
-
-
+    if git_url and gh_auth:
+        set_local_repo_credentials(gh_auth)
+        run_shell_command(['git', 'remote', 'add', 'origin', git_url])
+        run_shell_command(['git', 'push', '-u', 'origin', 'master'])
+        unset_local_repo_credentials()
