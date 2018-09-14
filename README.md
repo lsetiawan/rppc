@@ -6,6 +6,8 @@ Reproducible Python Package Creator
 
 The package created tries to follow University of Washington eScience Institute [Guidelines for Reproducible and Open Science](http://uwescience.github.io/reproducible/guidelines.html).
 
+**NOTE: This package only works for Python 3.5 and above**
+
 ## 2 Factor Authentication
 
 Note that `git` CLI commands only accept basic authentication procedures. If you have 2FA set up on your account, you have to generate a [Personal Access Token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/). In this case, when you are asked to enter a password in a manner such as:
