@@ -80,6 +80,7 @@ def create_license(selection, package_dir, author_name):
 
 def create_setup(package_dir, package_name, package_description,
                 author_name, author_email, license_detail):
+    package_description = package_description.replace("'", "\\'")
     file_writer(package_dir,
                 'setup.py',
                 setup_template(
