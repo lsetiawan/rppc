@@ -32,7 +32,7 @@ from .templates import (
     authors_md
 )
 
-__author__ = 'Landung Setiawan'
+__author__ = ['Landung Setiawan', 'Adrian Prananda']
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
