@@ -42,30 +42,104 @@ LICENSES = requests.get('https://api.github.com/licenses').json()
 DEFAULT_CREDENTIAL_LOC = '~/.git-credentials'
 
 def create_package_dir(package_name):
+    """
+    Creates package directory in the current directory where
+    command is executed.
+
+    Args:
+        package_name (str): Package name that's being created.
+    Returns:
+        str: Full path to created folder.
+    """
     return folder_creator(BASE_DIR, package_name)
 
 def create_tests(package_dir):
+    """
+    Creates a ``tests`` directory and a simple example test module.
+
+    Args:
+        package_dir (str): Full path to package directory.
+    Returns:
+        None
+    """
     tests_dir = folder_creator(package_dir, 'tests')
     file_writer(tests_dir, '__init__.py', '')
     file_writer(tests_dir, 'test_example.py', tests_example())
 
 def create_travis(package_dir, package_name):
+    """
+    Creates a ``.travis.yml`` from the template provided.
+
+    Args:
+        package_dir (str): Full path to package directory.
+        package_name (str): Package name that's being created.
+    Returns:
+        None
+    """
     file_writer(package_dir, '.travis.yml', travis_template(package_name))
 
 def create_flake8(package_dir, package_name):
+    """
+    Creates a ``.flake8`` from the template provided.
+
+    Args:
+        package_dir (str): Full path to package directory.
+        package_name (str): Package name that's being created.
+    Returns:
+        None
+    """
     file_writer(package_dir, '.flake8', flake8_template(package_name))
 
 def create_authors(package_dir, author_name, author_email):
+    """
+    Creates a ``AUTHORS.md`` from the tempate provided.
+
+    Args:
+        package_dir (str): Full path to package directory.
+        author_name (str): The package author's name.
+        author_email (str): The package author's email.
+    Returns:
+        None
+    """
     file_writer(package_dir, 'AUTHORS.md', authors_md(author_name, author_email))
 
 def create_contributing(package_dir, package_name, github_username):
+    """
+    Creates a ``CONTRIBUTING.md`` from the tempate provided 
+    for contribution instructions.
+
+    Args:
+        package_dir (str): Full path to package directory.
+        package_name (str): Package name that's being created.
+        github_username (str): Package creator's github username for github interactions.
+    Returns:
+        None
+    """
     file_writer(package_dir, 'CONTRIBUTING.md', contributing_md(package_name, github_username))
 
 def create_notebooks_folder(package_dir):
+    """
+    Creates a ``notebooks`` directory for any jupyter notebooks.
+
+    Args:
+        package_dir (str): Full path to package directory.
+    Returns:
+        None
+    """
     notebooks_dir = folder_creator(package_dir, 'notebooks')
     file_writer(notebooks_dir, '.gitkeep', '')
 
 def create_license(selection, package_dir, author_name):
+    """
+    Creates a ``LICENSE`` file from the chosen license.
+
+    Args:
+        selection (int): License selection integer from list.
+        package_dir (str): Full path to package directory.
+        author_name (str): The package author's name.
+    Returns:
+        dict: The detail about the chosen license.
+    """
     lic = LICENSES[selection]
     license_detail = requests.get(lic['url']).json()
     license_text = license_detail['body']
@@ -80,6 +154,19 @@ def create_license(selection, package_dir, author_name):
 
 def create_setup(package_dir, package_name, package_description,
                 author_name, author_email, license_detail):
+    """
+    Create ``setup.py`` and ``setup.cfg`` files.
+
+    Args:
+        package_dir (str): Full path to package directory.
+        package_name (str): Package name that's being created.
+        package_description (str): The created package descriptions.
+        author_name (str): The package author's name.
+        author_email (str): The package author's email.
+        license_detail (dict): The detail about the chosen license.
+    Returns:
+        None
+    """
     package_description = package_description.replace("'", "\\'")
     file_writer(package_dir,
                 'setup.py',
@@ -93,25 +180,73 @@ def create_setup(package_dir, package_name, package_description,
     file_writer(package_dir, 'setup.cfg', setup_cfg_template(package_name))
 
 def create_readme(package_dir, package_name, package_description):
+    """
+    Creates a ``README.md`` file for the package.
+
+    Args:
+        package_dir (str): Full path to package directory.
+        package_name (str): Package name that's being created.
+        package_description (str): The created package descriptions.
+    Returns:
+        None
+    """
     readme_text = readme_template(package_name, package_description)
     file_writer(package_dir, 'README.md', readme_text)
 
 def create_requirements(package_dir, dependencies, **kwargs):
+    """
+    Creates a ``requirements.txt`` file from listed dependencies,
+    and ``requirements-dev.txt`` for development requirements from template.
+
+    Args:
+        package_dir (str): Full path to package directory.
+        dependencies (str): List of dependencies, comma separated.
+    Returns:
+        None
+    """
     cleaned_dependencies = list(map(lambda d: d.strip(' '), dependencies.split(',')))
     file_writer(package_dir, 'requirements.txt', '\n'.join(cleaned_dependencies))
     additional_text = kwargs.get('additional_text', '')
     file_writer(package_dir, 'requirements-dev.txt', dev_dependencies(additional_text))
 
 def create_manifest(package_dir, **kwargs):
+    """
+    Creates a ``MANIFEST.in`` for specifying other files that 
+    need to be included in package.
+
+    Args:
+        package_dir (str): Full path to package directory.
+    Returns:
+        None
+    """
     additional_text = kwargs.get('additional_text', '')
     file_writer(package_dir, 'MANIFEST.in', manifest(additional_text))
 
 def use_versioneer():
+    """
+    Setup versioneer, auto versioning system.
+
+    Args:
+        None
+    Returns:
+        None
+    """
     run_shell_command(['versioneer', 'install'])
 
 def create_sphinx_docs(package_dir, package_name,
                        package_description, author_name,
                        **kwargs):
+    """
+    Creates ``docs`` folder for documentation via sphinx.
+
+    Args:
+        package_dir (str): Full path to package directory.
+        package_name (str): Package name that's being created.
+        package_description (str): The created package descriptions.
+        author_name (str): The package author's name.
+    Returns:
+        None
+    """
     docs_dir = folder_creator(package_dir, 'docs')
     cmd = ['sphinx-quickstart', '--sep',
            f'--project={package_name}', f'--author="{author_name}"',
@@ -124,6 +259,15 @@ def create_sphinx_docs(package_dir, package_name,
     run_shell_command(cmd)
 
 def init_package_code_dir(package_dir, package_name, **kwargs):
+    """
+    Creates package code directory, and setup ``__init__.py``.
+
+    Args:
+        package_dir (str): Full path to package directory.
+        package_name (str): Package name that's being created.
+    Returns:
+        None
+    """
     package_code_dir = folder_creator(package_dir, package_name)
 
     author_name = kwargs.get('author_name', '')
@@ -131,6 +275,14 @@ def init_package_code_dir(package_dir, package_name, **kwargs):
     file_writer(package_code_dir, '__init__.py', init_text)
 
 def init_git(package_dir):
+    """
+    Initialize git version control system.
+
+    Args:
+        package_dir (str): Full path to package directory.
+    Returns:
+        None
+    """
     os.chdir(package_dir)
     run_shell_command(['git', 'init'])
 
@@ -139,6 +291,14 @@ def init_git(package_dir):
     file_writer(package_dir, '.gitignore', gitignore_text)
 
 def get_user_input(info_file=None):
+    """
+    Retrieves user input from command line argument or specification file.
+
+    Args:
+        info_file (str): Path to yaml file containing package specifications.
+    Returns:
+        Munch: Object that contains the package specification information.
+    """
     args = dict()
     if info_file:
         ymldct = yaml.load(info_file)
@@ -163,6 +323,15 @@ def get_user_input(info_file=None):
     return Munch(**args)
 
 def set_local_repo_credentials(gh_auth, credential_loc=None):
+    """
+    Setup the local repository credentials
+
+    Args:
+        gh_auth (obj): Github login object.
+        credential_loc (str): Credential file location.
+    Returns:
+        None
+    """
     if gh_auth is None or gh_auth.get('auth') is None:
         print('Authentication required. Please provide username and password!')
         exit(1)
@@ -179,6 +348,14 @@ def set_local_repo_credentials(gh_auth, credential_loc=None):
     run_shell_command(['git', 'config', 'credential.helper', f'"store --file {credential_loc}"'])
 
 def unset_local_repo_credentials(credential_loc=None):
+    """
+    Unset the local repository credentials
+
+    Args:
+        credential_loc (str): Credential file location.
+    Returns:
+        None
+    """
     if credential_loc is None:
         credential_loc = DEFAULT_CREDENTIAL_LOC
 
@@ -187,6 +364,15 @@ def unset_local_repo_credentials(credential_loc=None):
     run_shell_command(['rm', '-rf', credential_loc])
 
 def init(info_file=None, init_github=False):
+    """
+    Initialize the whole package repository.
+
+    Args:
+        info_file (str): Path to yaml file containing package specifications.
+        init_github (bool): Initialize github connection. Defaults to False.
+    Returns:
+        None
+    """
     # Get user inputs
     inputs = get_user_input(info_file)
     git_url = None
